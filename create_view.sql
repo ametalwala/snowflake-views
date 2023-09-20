@@ -1,3 +1,5 @@
+create or replace view CANDIDATE_ADAM_METALWALA.donor_facts as (
+
 with base as (
 
 select 
@@ -10,13 +12,12 @@ select
    
 from public.donations 
 group by 1 
-
 ), 
 aggregations as (
 select
     donations.user_id
     , count(*) as count_donations_all_time
-    , sum(amount_cents) as sum_donations_all_time
+    , cast(sum(amount_cents) as float) as sum_donations_all_time
     , sum(case when created_at <= dateadd(year, 1, base.first_donation_date) then amount_cents else 0 end)::float as sum_donations_first_year 
     , cast(round(avg(amount_cents), 2) as float) avg_donation_amount
 
@@ -24,7 +25,6 @@ from public.donations
 left join base 
     on donations.user_id = base.user_id
 group by 1 
-
 ) 
 select 
     base.user_id as donor_user_id
@@ -42,3 +42,4 @@ select
 from base
 left join aggregations
     on base.user_id = aggregations.user_id 
+); 
